@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>3530FinalProject</title>
+<style>
+    pre{
+        font-size: 18px
+    }
+    img{
+        height: 600px
+    }
+</style>
+</head>
+
+<body>
+<h2>Made By Hao Ding</h2>
+<h2>hd945</h2>
+<h2>12/1/2018</h2>
+<div style="margin: 100px">
+<h1>3530FinalProject</h1>
+<div>
+<h2>Manual process:</h2>
+<h3>On Debian</h3>
+<pre>
+#Add users to Debian.
+ sudo adduser user1   
+#Change host name.
+ sudo hostnamectl set-hostname Master
+ sudo reboot
+#Add them to soduers.
+ sudo visudo
+#Give them new ip address.
+ sudo ifconfig enp0s8 192.168.1.10 netmask 255.255.255.0
+#Show its ip adress.
+ sudo ifconfig
+<img src="master%20ip.png" alt="Master IP">
+</pre>
+<h3>On Ubuntu</h3>
+<pre>
+#Add users to Ubuntu.
+ sudo adduser user2   
+#Change host name.
+ sudo hostnamectl set-hostname node1
+ sudo reboot
+#Add them to soduers.
+ sudo visudo
+#Give them new ip address.
+ sudo ifconfig enp0s3 192.168.1.20 netmask 255.255.255.0
+#Show its ip adress.
+ sudo ifconfig
+<img src="node1%20ip.png" alt="Node1 IP">
+</pre>
+<h3>On Centos</h3>
+<pre>
+#Add users to Centos.
+ sudo adduser user3   
+#Change host name.
+ sudo hostnamectl set-hostname node2
+ sudo reboot
+#Add them to soduers.
+ sudo visudo
+#Give them new ip address.
+ sudo ifconfig enp0s3 192.168.1.30 netmask 255.255.255.0
+#Show its ip adress.
+ sudo ifconfig
+<img src="node2%20ip.png" alt="Node2 IP">
+</pre>
+<pre>
+#After each host has a right ip adress, ping each other.
+ping -c 1 <i>each_ip</i>
+#Master ping:
+<br>
+<img src="master%20ping.png" alt="Master Ping">
+<br>
+#Node1 ping:
+<br>
+<img src="node1%20ping.png" alt="Node1 Ping">
+<br>
+#Node2 ping:
+<br>
+<img src="node2%20ping.png" alt="Node2 Ping">
+<br>
+</pre>
+<pre>
+#Create an AWS instance.
+<img src="aws%20instance.png" alt="AWS Instance">
+</pre>
+<br>
+</div>
+    
+<div>
+<h2>Automation process in local resources:</h2>   
+<pre>
+#Search all ip address in Class C by search.sh
+<img src="search.sh.png" alt="search.sh">
+<br>
+#Get a result.
+<img src="search%20result.png" alt="Search Result">
+</pre>
+<pre>
+#Get host information by info.sh, and it will be used in auto.sh.
+<img src="info.sh.png" alt="info.sh">
+<br>
+</pre> 
+</div>
+<div>
+<h2>Automation process in remote resources:</h2>
+<pre>
+#The program is completed automaticly by auto.sh.
+#Firstly, auto.sh call info.sh three times to get three TXT files which contain information of different hosts
+#Their names are master.txt, node1.txt and node2.txt
+#For master.txt
+./info.sh && cat temp.txt > master.txt
+#For node1.txt
+scp info.sh user2@192.168.1.20:~/Desktop
+ssh user2@192.168.1.20 "sudo -S ./Desktop/info.sh && cat temp.txt > Desktop/node1.txt"
+scp user2@192.168.1.20:~/Desktop/node1.txt ./
+#For node2.txt
+scp info.sh user3@192.168.1.30:~/Desktop
+ssh user3@192.168.1.30 "sudo -S ./Desktop/info.sh && cat temp.txt > Desktop/node2.txt"
+scp user3@192.168.1.30:~/Desktop/node2.txt ./
+
+#Secondly, collect these three TXT files together into together.txt, and remove these three files.
+cat master.txt > together.txt
+echo -e "\n\n" >> together.txt
+cat node1.txt >> together.txt
+echo -e "\n\n" >> together.txt
+cat node2.txt >> together.txt
+rm master.txt node1.txt node2.txt temp.txt
+
+#Thirdly, install Docker in the instance of AWS
+sudo ssh -i default.pem ec2-user@18.220.86.148 /bin/bash << EOF
+sudo yum install httpd
+y
+sudo service httpd start
+sudo yum install docker
+sudo service docker start
+sudo docker run -dit --name my-apache-app -p 8080:80 -v "$PWD":/usr/local/apache2/htdocs/ httpd:2.4
+sudo service httpd stop
+sudo rm -rf /var/www/html/*
+EOF
+
+#Fourthly, build index.html by together.txt
+<img src="build%20html.png" alt="Build html" style = "height: 400px" >
+
+#Fifthly, display the index.html to AWS
+
+<img src="auto1.png" alt="auto.sh(1)">
+<img src="auto2.png" alt="auto.sh(2)">
+<br>
+#The http port is opened.
+<img src="aws%20set%20http%20type.png" alt="Open Http Port">
+<br>
+#The website is <a href="http://18.220.86.148/">http://18.220.86.148/</a>
+#All the files can be found in <a href="https://github.com/HHHHHHHHHHHHHHHHHHHHHHHHHHHHHH/3530FinalProject.git">https://github.com/HHHHHHHHHHHHHHHHHHHHHHHHHHHHHH/3530FinalProject.git</a>
+</pre>       
+</div>
+</div> 
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
